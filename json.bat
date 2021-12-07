@@ -1,0 +1,1 @@
+json-server --watch src/datas/db.json --port 3003
