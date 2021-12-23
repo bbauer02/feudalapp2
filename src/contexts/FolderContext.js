@@ -25,6 +25,7 @@ function FolderContextProvider({ children }) {
     setContextData(foldersData);
   };
 
-  return <FolderContext.Provider value={(contextData, setFolders)}>{children}</FolderContext.Provider>;
+  const value = { contextData, setFolders };
+  return <FolderContext.Provider value={value}>{children}</FolderContext.Provider>;
 }
 export default FolderContextProvider;
