@@ -7,38 +7,104 @@ const JWT_SECRET = 'minimal-secret-key';
 const Folders = [
   {
     id: 1,
-    parent_id: null,
+    parent: null,
     name: 'Folder1',
     owner_id: 1
   },
   {
     id: 2,
-    parent_id: null,
+    parent: null,
     name: 'Folder2',
     owner_id: 1
   },
   {
     id: 3,
-    parent_id: null,
+    parent: null,
     name: 'Folder3',
     owner_id: 1
   },
   {
     id: 4,
-    parent_id: null,
+    parent: null,
     name: 'Folder4',
     owner_id: 1
   },
   {
     id: 5,
-    parent_id: null,
+    parent: null,
     name: 'Folder5',
     owner_id: 1
   },
   {
     id: 6,
-    parent_id: null,
+    parent: null,
     name: 'Folder6',
+    owner_id: 1
+  },
+  {
+    id: 7,
+    parent: {
+      id: 1,
+      parent: null,
+      name: 'Folder1',
+      owner_id: 1
+    },
+    name: 'subFolder1',
+    owner_id: 1
+  },
+  {
+    id: 8,
+    parent: {
+      id: 1,
+      parent: null,
+      name: 'Folder1',
+      owner_id: 1
+    },
+    name: 'subFolder2',
+    owner_id: 1
+  },
+  {
+    id: 9,
+    parent: {
+      id: 1,
+      parent: null,
+      name: 'Folder1',
+      owner_id: 1
+    },
+    name: 'subFolder3',
+    owner_id: 1
+  },
+  {
+    id: 10,
+    parent: {
+      id: 2,
+      parent: null,
+      name: 'Folder2',
+      owner_id: 1
+    },
+    name: 'subFolder4',
+    owner_id: 1
+  },
+  {
+    id: 11,
+    parent: {
+      id: 7,
+      parent: 1,
+      name: 'subFolder1',
+      owner_id: 1
+    },
+    name: 'subSubFolder1',
+    owner_id: 1
+  },
+  {
+    id: 12,
+    parent: {
+      id: 7,
+      parent: 1,
+      name: 'subFolder1',
+      owner_id: 1
+    },
+    name: 'subSubFolder2',
     owner_id: 1
   }
 ];
@@ -52,12 +118,25 @@ mock.onGet('/api/user/folders').reply(async (config) => {
     const accessToken = Authorization.split(' ')[1];
     const data = verify(accessToken, JWT_SECRET);
     const userId = typeof data === 'object' ? data?.userId : '';
-    const parentId = parseInt(config.params.parentId, 10) || null;
-    const folders = Folders.filter((_folder) => _folder.owner_id === userId && _folder.parent_id === parentId);
+    let folderId = -1;
+    if (config.params) {
+      folderId = parseInt(config.params.folderId, 10) || null;
+    }
+    const folders = Folders.filter((_folders) => {
+      if (_folders.parent && _folders.parent.id === folderId && _folders.owner_id === userId) {
+        return true;
+      }
+      if (!_folders.parent && _folders.parent === folderId && _folders.owner_id === userId) {
+        return true;
+      }
+      if (folderId === -1 && _folders.owner_id === userId) {
+        return true;
+      }
+      return false;
+    });
     if (!folders) {
       return [401, { message: 'Invalid authorization token' }];
     }
-
     return [200, folders];
   } catch (error) {
     console.error(error);
