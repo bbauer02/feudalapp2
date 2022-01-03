@@ -45,7 +45,6 @@ const Folders = [
     id: 7,
     parent: {
       id: 1,
-      parent: null,
       name: 'Folder1',
       owner_id: 1
     },
@@ -56,7 +55,6 @@ const Folders = [
     id: 8,
     parent: {
       id: 1,
-      parent: null,
       name: 'Folder1',
       owner_id: 1
     },
@@ -67,7 +65,6 @@ const Folders = [
     id: 9,
     parent: {
       id: 1,
-      parent: null,
       name: 'Folder1',
       owner_id: 1
     },
@@ -78,7 +75,6 @@ const Folders = [
     id: 10,
     parent: {
       id: 2,
-      parent: null,
       name: 'Folder2',
       owner_id: 1
     },
@@ -89,7 +85,6 @@ const Folders = [
     id: 11,
     parent: {
       id: 7,
-      parent: 1,
       name: 'subFolder1',
       owner_id: 1
     },
@@ -100,7 +95,6 @@ const Folders = [
     id: 12,
     parent: {
       id: 7,
-      parent: 1,
       name: 'subFolder1',
       owner_id: 1
     },
@@ -138,6 +132,31 @@ mock.onGet('/api/user/folders').reply(async (config) => {
       return [401, { message: 'Invalid authorization token' }];
     }
     return [200, folders];
+  } catch (error) {
+    console.error(error);
+    return [500, { message: 'Internal server error' }];
+  }
+});
+
+mock.onPost('/api/user/folders').reply(async (config) => {
+  try {
+    const { Authorization } = config.headers;
+    if (!Authorization) {
+      return [401, { message: 'Authorization token missing' }];
+    }
+    const accessToken = Authorization.split(' ')[1];
+    const data = verify(accessToken, JWT_SECRET);
+    const userId = typeof data === 'object' ? data?.userId : '';
+    const param = JSON.parse(config.data);
+    let parentFolder = null;
+    if (param.parent) {
+      parentFolder = Folders.filter((folder) => folder.id === parseInt(param.parent, 10));
+      delete parentFolder.parent;
+    }
+    const { name } = param;
+    const folderId = Folders.length + 1;
+    const folder = { id: folderId, parent: parentFolder, name, owner_id: userId };
+    return [200, folder];
   } catch (error) {
     console.error(error);
     return [500, { message: 'Internal server error' }];

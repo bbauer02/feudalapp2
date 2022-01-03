@@ -16,7 +16,6 @@ export default function FoldersList() {
   const handleClickFolder = (e) => {
     enterFolder(e.currentTarget.getAttribute('data-id'));
   };
-  console.log(breadScrumb);
   return (
     <div>
       <Stack spacing={{ xs: 2, md: 3 }}>
@@ -25,14 +24,14 @@ export default function FoldersList() {
             <Icon icon={folderFill} width={20} height={20} />
             Dossier racine
           </MIconButton>
-          {curFolderName !== null ? (
-            <MIconButton onClick={handleClickFolder} data-id={curFolderId}>
-              <Icon icon={arrowForward} width={20} height={20} />
-              {curFolderName}
-            </MIconButton>
-          ) : (
-            ''
-          )}
+          {breadScrumb.length > 0
+            ? [...breadScrumb].reverse().map((folder) => (
+                <MIconButton key={folder.id} onClick={handleClickFolder} data-id={folder.id}>
+                  <Icon icon={arrowForward} width={20} height={20} />
+                  {folder.name}
+                </MIconButton>
+              ))
+            : ''}
         </Stack>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
           {curChildren
